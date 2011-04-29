@@ -1,3 +1,5 @@
+This is a fork of the following plugin.  Includes errors for including name or username in password.
+
 === Plugin Name ===
 Contributors: maxime.rainville
 Donate link: http://maximerainville.com/password_rules
@@ -25,11 +27,11 @@ Anything except an empty string can be use as a password in an out of the box Wo
 
 = Why should I care about the password of my users? =
 
-Short passwords using a small character set are vulnerable to brute force attacks.  Also, IT deparements in large organisations will often request minimal security requirements before deploying an app; this extension can help you cut throught the red tape. 
+Short passwords using a small character set are vulnerable to brute force attacks.  Also, IT deparements in large organisations will often request minimal security requirements before deploying an app; this extension can help you cut throught the red tape.
 
 = What about existing users? =
 
-WordPress hashes passwords before storing them in its database.  You can not determined the original password from its hashed.  So it's impossible to validate existing password to see if they meet your requirements.  This extension will only validates passwords when the user updates his profile.  
+WordPress hashes passwords before storing them in its database.  You can not determined the original password from its hashed.  So it's impossible to validate existing password to see if they meet your requirements.  This extension will only validates passwords when the user updates his profile.
 
 == Screenshots ==
 
