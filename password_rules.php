@@ -11,7 +11,7 @@ Text Domain: password_rules
 Copyright 2010  Maxime Rainville  (email : info@maximerainville.com)
 
     This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License, version 2, as 
+    it under the terms of the GNU General Public License, version 2, as
     published by the Free Software Foundation.
 
     This program is distributed in the hope that it will be useful,
@@ -32,27 +32,27 @@ $password_rules_error = false;
 
 //Wrapper function for password_rules
 function password_rules_check($user, &$pass1, &$pass2) {
-	password_rules(&$pass1, &$pass2);
+	password_rules(&$user, &$pass1, &$pass2);
 }
 
 // Validate password
-function password_rules(&$pass1, &$pass2) 
+function password_rules(&$user, &$pass1, &$pass2)
 {
 	global $password_rules_error;
-	
-	
+
+
 	if ($pass1 != $pass2 || $pass1 == '') {
 		// If the passwords do not match or if no password is provided, we'll let WP throw its own error.
 		return;
 	}
-	
+
 	//Check password length
 	$min_len = get_option("min_len");
 	if (strlen($pass1) < $min_len) {
 		$password_rules_error = sprintf(__('<strong>ERROR</strong>: Your new password must be at least %d characters long.','password_rules') , $min_len);
 		return;
 	}
-	
+
 	//Check if password as lowercase and upper case char
 	$require_letter = get_option("require_letter");
 	if ($require_letter == "lower_upper" && !( preg_match('/[A-Z]/', $pass1) && preg_match('/[a-z]/', $pass1) ) )  {
@@ -62,36 +62,50 @@ function password_rules(&$pass1, &$pass2)
 		$password_rules_error = __('<strong>ERROR</strong>: Your new password must contain at least one letter.','password_rules');
 		return;
 	}
-	
+
 	//Check if password as a digit
 	$require_digit = ( get_option("require_digit") == "checked" );
 	if ($require_digit && !preg_match('/\d/', $pass1))  {
 		$password_rules_error = __('<strong>ERROR</strong>: Your new password must contain at least one digit.','password_rules');
 		return;
 	}
-	
+
 	//Check if password as a punctuation character
 	$require_punctuation = ( get_option("require_punctuation") == "checked" );
 	if ($require_punctuation && !preg_match('/[`!"?$%^&*()_\-+={[}\]:;@\'~#|<>,.\/]/', $pass1))  {
 		$password_rules_error = __('<strong>ERROR</strong>: Your new password must contain at least one punctuation character among the following.','password_rules') . '<br />` ! " ? $ % ^ & * ( ) _ - + = { [ } ] : ; @ \' ~ # | &lt; , &gt; . /';
 		return;
 	}
-	
+
+    //Check for common idiocy, such as including username or real name in the
+    //password
+    $wp_user = new WP_User($user);
+    $names = array(
+        strtolower($user),
+        strtolower($wp_user->first_name),
+        strtolower($wp_user->last_name)
+    );
+    $lowpass = strtolower($pass1);
+    foreach ($names as &$name) {
+        if ($name && strpos($lowpass, $name) !== FALSE) {
+		    $password_rules_error = __('<strong>ERROR</strong>: Your new password must not contain your name or username.', 'password_rules');
+        }
+    }
 }
 
 //Return validation errors
-function password_rules_error($errors) 
+function password_rules_error($errors)
 {
 	global $password_rules_error;
-	
+
 	if ($password_rules_error) {
 		$errors->add( 'pass', $password_rules_error, array( 'form-field' => 'pass1' ) );
 	}
 }
 
 // Add plugin to settings menu
-function password_rules_admin_menu() {  
-	add_options_page("Password Rules", "Password Rules", 'install_plugins', __FILE__, "password_rules_settings"); 
+function password_rules_admin_menu() {
+	add_options_page("Password Rules", "Password Rules", 'install_plugins', __FILE__, "password_rules_settings");
 	add_action( 'admin_init', 'password_rules_register_settings' );
 
 }
@@ -107,14 +121,14 @@ function password_rules_register_settings() {
 // Display Settings form
 function password_rules_settings() {
 	include('password_rules_admin.php');
-}    
+}
 
 //Called by the WP profile page
 add_action('check_passwords','password_rules_check', 10, 3);
 add_action('user_profile_update_errors','password_rules_error', 10, 1);
 
 //Called by Wordpress to add link to option menu
-add_action('admin_menu', 'password_rules_admin_menu');  
+add_action('admin_menu', 'password_rules_admin_menu');
 
 //Provided for third party developper conveniance, to prevent possible conflicts with 'check_passwords' or 'user_profile_update_errors'
 add_action('password_rules','password_rules', 10, 2);
