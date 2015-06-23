@@ -32,7 +32,7 @@ $password_rules_error = false;
 
 //Wrapper function for password_rules
 function password_rules_check($user, &$pass1, &$pass2) {
-	password_rules(&$user, &$pass1, &$pass2);
+	password_rules($user, $pass1, $pass2);
 }
 
 // Validate password
